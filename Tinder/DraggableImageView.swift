@@ -14,6 +14,7 @@ class DraggableImageView: UIView {
     @IBOutlet weak var imageView: UIImageView!
 
     var initialImageViewCenter: CGPoint!
+    var reverseRotation = false
 
     var image: UIImage? {
         get { return imageView.image }
@@ -45,18 +46,21 @@ class DraggableImageView: UIView {
         switch sender.state {
         case .Began:
             initialImageViewCenter = imageView.center
+            reverseRotation = sender.locationInView(self).y > frame.height / 2
         case .Changed:
             let translation = sender.translationInView(self)
             var offset = translation.x
             if translation.x > 100 {
-                offset = 320
+                offset = 360
             } else if translation.x < -100 {
-                offset = -320
+                offset = -360
             }
             imageView.transform = CGAffineTransformMakeTranslation(offset, 0)
+            let angle = (translation.x / 1440) * CGFloat(M_PI)
+            imageView.transform =
+                CGAffineTransformRotate(imageView.transform, reverseRotation ? -angle : angle)
         case .Ended:
-            let offset = initialImageViewCenter.x - imageView.center.x
-            imageView.transform = CGAffineTransformMakeTranslation(offset, 0)
+            imageView.transform = CGAffineTransformIdentity
         default:
             break
         }
